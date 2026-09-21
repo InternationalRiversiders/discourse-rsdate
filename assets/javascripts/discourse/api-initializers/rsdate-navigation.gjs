@@ -7,13 +7,13 @@ export default apiInitializer((api) => {
   api.addSidebarSection((BaseSection, BaseLink) => {
     return class extends BaseSection {
       get name() { return "rsdate"; }
-      get title() { return "RSDate"; }
-      get text() { return "RSDate"; }
+      get title() { return "RS Date"; }
+      get text() { return "RS Date"; }
       get displaySection() { return true; }
       get links() { return [new (class extends BaseLink {
         get name() { return "rsdate"; }
         get route() { return "rsdate"; }
-        get text() { return "RSDate"; }
+        get text() { return "RS Date"; }
         get title() { return this.text; }
         get prefixType() { return "icon"; }
         get prefixValue() { return "heart"; }
