@@ -73,3 +73,7 @@ RSDate 的 Discourse 原生插件，页面位于 `/rsdate`。使用论坛登录�
 `script/regression_test.rb` 仅允许在带 `RIVER_DISPOSABLE=1` 的 `river_community_test` 隔离库运行，会清空该库内 RSDate 表。测试覆盖主动报名、问卷更新、旧版字段限制、分数、发布幂等、历史、撤回、权限、后台任务、时间边界及数据清理。Blossom 的来源与许可证见 `lib/solver/SOURCE.md` 和 `lib/solver/LICENSE`。
 
 生产数据库、账号凭据、向量密钥、导出 JSON、日志和含真实资料的截图应保存在插件仓库之外。
+
+## 正式运行状态
+
+已完成正式迁移，旧域名保留跳转，业务数据和图片由论坛数据库承接。当前功能核对与迁移边界见 [最终复核](docs/final-review.md)。
