@@ -26,6 +26,7 @@ RSDate 的 Discourse 原生插件，页面位于 `/rsdate`。使用论坛登录�
 | `rsdate_school_groups` | `学校:认证组:校区一\|校区二;学校二:认证组二:校区`；匹配认证学校的成员也可访问 |
 | `rsdate_max_pool` | 单次匹配人数上限，调整前应测试实际池规模 |
 | `rsdate_scheduled_enabled` | 默认关闭，启用后每分钟检查是否到期 |
+| `rsdate_scheduled_start_at` | ISO8601 格式的最早发布周期；迁移时设为下一次正常周期，避免立即补发停滞的旧周期 |
 | `rsdate_publish_weekday/hour/minute/timezone` | 默认上海时间周日 20:00 |
 | `rsdate_embedding_key/model` | 可选文本向量服务；密钥为 secret 设置 |
 
@@ -58,6 +59,8 @@ RSDate 的 Discourse 原生插件，页面位于 `/rsdate`。使用论坛登录�
 3. 核对输出 SHA256、用户 ID、数量和业务状态。关闭目标插件后，将同一 SHA256 通过 `RIVER_IMPORT_SHA256`、`RIVER_IMPORT_APPLY=1` 传入同一命令正式导入。导入遇到未映射用户、非空目标或关联冲突会回滚；相同文件可幂等重试。
 
 导入保留资料与报名状态、文本向量、模块结构、提交日期及是否有效、发布记录、当前匹配和历史匹配。早期整份问卷版本已被旧系统的模块问卷取代，仅保留在 Legacy 档案中，不重复加入当前问卷。
+
+旧域名的主页、资料、等待、结果、问卷模块和管理链接可通过 `/rsdate/legacy` 映射到原生页面。SSO 查询参数不转发。
 
 正式切换需先冻结旧版写入，重新导出最终数据，备份论坛，核对空目标导入和发布周期，再启用原生入口及定时发布。不要同时运行两套发布任务。
 

@@ -89,7 +89,7 @@ module DiscourseRsdate
   end
   class MainController < ::ApplicationController
     requires_plugin 'discourse-rsdate'
-    skip_before_action :check_xhr, only: [:index, :export]
+    skip_before_action :check_xhr, only: [:index, :export, :legacy]
     before_action :enabled!
     rescue_from Error, ArgumentError do |error|
       render_json_dump({errors: [error.message]}, status: 422)
@@ -112,6 +112,11 @@ module DiscourseRsdate
       end
       Shared.deliver
       render_json_dump(result)
+    end
+    def legacy
+      response.headers['Cache-Control'] = 'no-store'
+      query = Service.legacy_query(params[:path], params.to_unsafe_h)
+      redirect_to("/rsdate?#{query.to_query}", status: :found)
     end
     def export
       Access.check!(current_user)

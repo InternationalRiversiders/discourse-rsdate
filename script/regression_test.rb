@@ -14,7 +14,7 @@ class RsdateTest < Minitest::Test
     SiteSetting.rsdate_enabled=true;SiteSetting.rsdate_read_only=false;SiteSetting.rsdate_admin_only=false
     SiteSetting.rsdate_allowed_groups=@group.id.to_s;SiteSetting.rsdate_admin_groups=''
     SiteSetting.rsdate_school_groups='测试大学:date_fixture_members:测试校区|其他'
-    SiteSetting.rsdate_embedding_key='';SiteSetting.rsdate_scheduled_enabled=false
+    SiteSetting.rsdate_embedding_key='';SiteSetting.rsdate_scheduled_enabled=false;SiteSetting.rsdate_scheduled_start_at=''
     SiteSetting.rsdate_publish_weekday=0;SiteSetting.rsdate_publish_hour=20;SiteSetting.rsdate_publish_minute=0;SiteSetting.rsdate_publish_timezone='Asia/Shanghai'
   end
   def user(name,admin=false)
@@ -196,6 +196,34 @@ class RsdateTest < Minitest::Test
     assert_empty A::Submission.all
     assert_empty A::Legacy.all
     refute A::Service.progress(@alice.id)[:ready]
+  end
+
+  def test_cutover_does_not_publish_backlogged_cycles
+    ready(@alice,@bob)
+    SiteSetting.rsdate_scheduled_enabled=true
+    SiteSetting.rsdate_scheduled_start_at='2026-09-27T12:00:00Z'
+    travel_to Time.iso8601('2026-09-21T12:00:00Z') do
+      A::Service.tick
+      assert_empty A::Publication.all
+      assert_empty A::Event.all
+      assert_equal 2,A::Profile.where(active:true).count
+    end
+    travel_to Time.iso8601('2026-09-27T12:00:00Z') do
+      A::Service.tick;A::Service.tick
+      assert_equal 1,A::Publication.count
+      assert_equal '202609272000',A::Publication.first.cycle_key
+      assert_equal 2,A::Event.count
+    end
+  end
+  def test_legacy_links_preserve_modules_and_discard_external_redirects
+    q=questionnaire
+    A::Legacy.create!(source:'QuestionnaireModule',legacy_id:'legacy-module',target_kind:'Questionnaire',target_id:q.id,data:{})
+    assert_equal({view:'module',id:q.id},A::Service.legacy_query('questionnaire/legacy-module'))
+    assert_equal({view:'admin',part:'modules',edit:q.id},A::Service.legacy_query('admin',{'edit'=>'legacy-module'}))
+    assert_equal({view:'questions'},A::Service.legacy_query('questionnaire/missing'))
+    assert_equal({view:'me'},A::Service.legacy_query('/profile/'))
+    assert_equal({view:'home'},A::Service.legacy_query('auth/callback',{'sso'=>'secret','sig'=>'signature','redirect'=>'https://external.example'}))
+    assert_equal({view:'results'},A::Service.legacy_query('results'))
   end
 
 end

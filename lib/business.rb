@@ -155,6 +155,20 @@ module DiscourseRsdate
       else raise Error, '未知操作'
       end
     end
+    def self.legacy_query(path, params = {})
+      path = path.to_s.sub(%r{\A/}, '').sub(%r{/\z}, '')
+      views = {'app' => 'home', 'profile' => 'me', 'waiting' => 'home', 'results' => 'results', 'questionnaire' => 'questions'}
+      return {view: views[path]} if views.key?(path)
+      if path == 'admin'
+        id = Legacy.find_by(source: 'QuestionnaireModule', legacy_id: params['edit'].to_s)&.target_id if params['edit'].present?
+        return id ? {view: 'admin', part: 'modules', edit: id} : {view: 'admin'}
+      end
+      if path.start_with?('questionnaire/')
+        id = Legacy.find_by(source: 'QuestionnaireModule', legacy_id: path.split('/', 2).last)&.target_id
+        return id && Questionnaire.exists?(id) ? {view: 'module', id: id} : {view: 'questions'}
+      end
+      {view: 'home'}
+    end
     def self.scheduled_at(now = Time.current)
       zone = Time.find_zone!(SiteSetting.rsdate_publish_timezone)
       now = now.in_time_zone(zone)
@@ -189,7 +203,8 @@ module DiscourseRsdate
       end
       if SiteSetting.rsdate_scheduled_enabled
         due = scheduled_at
-        Matching.publish(due.strftime('%Y%m%d%H%M'), published_at: due)
+        start_at = SiteSetting.rsdate_scheduled_start_at.present? ? Time.iso8601(SiteSetting.rsdate_scheduled_start_at) : nil
+        Matching.publish(due.strftime('%Y%m%d%H%M'), published_at: due) if start_at.nil? || due >= start_at
       end
       update_embeddings if SiteSetting.rsdate_embedding_key.present?
     end

@@ -6,6 +6,7 @@ zh_CN:
     rsdate_allowed_groups: "允许使用RSDate的用户组（管理员始终可用）"
     rsdate_admin_groups: "允许管理RSDate的用户组"
     rsdate_max_pool: "单次匹配人数上限，调高前请进行负载验收"
+    rsdate_scheduled_start_at: "自动发布最早周期时间（ISO8601）；迁移时设为下一次正常发布，避免立即补发历史周期"
     rsdate_scheduled_enabled: "启用周期自动发布（迁移时请先停旧 cron）"
     rsdate_publish_weekday: "每周发布日，0 为周日，6 为周六"
     rsdate_publish_hour: "发布小时，使用配置的发布时间区"

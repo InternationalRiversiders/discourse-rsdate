@@ -18,6 +18,8 @@ plugins:
     max: 1000
   rsdate_scheduled_enabled:
     default: false
+  rsdate_scheduled_start_at:
+    default: ""
   rsdate_publish_weekday:
     default: 0
     min: 0
