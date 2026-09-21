@@ -1,0 +1,46 @@
+plugins:
+  rsdate_enabled:
+    default: false
+    client: true
+  rsdate_read_only:
+    default: true
+  rsdate_admin_only:
+    default: false
+  rsdate_allowed_groups:
+    default: ""
+    type: group_list
+  rsdate_admin_groups:
+    default: ""
+    type: group_list
+  rsdate_max_pool:
+    default: 200
+    min: 2
+    max: 1000
+  rsdate_scheduled_enabled:
+    default: false
+  rsdate_publish_weekday:
+    default: 0
+    min: 0
+    max: 6
+  rsdate_publish_hour:
+    default: 20
+    min: 0
+    max: 23
+  rsdate_publish_minute:
+    default: 0
+    min: 0
+    max: 59
+  rsdate_publish_timezone:
+    default: "Asia/Shanghai"
+    type: enum
+    choices:
+      - "Asia/Shanghai"
+      - "UTC"
+  rsdate_school_groups:
+    default: "电子科技大学:verified_uestcer:清水河校区|沙河校区|其他;四川大学:scuer:望江校区|华西校区|江安校区|其他"
+    type: text
+  rsdate_embedding_key:
+    default: ""
+    secret: true
+  rsdate_embedding_model:
+    default: "text-embedding-3-small"

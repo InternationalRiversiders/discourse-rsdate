@@ -1,0 +1,1 @@
+Vendored MIT licensed Ruby maximum-weight general graph solver from https://github.com/jaredbeck/graph_matching at 5be247b4b3d7a56cfa410a30d1c6c71648c13581. Namespace isolated; RGL replaced with a minimal graph/matching adapter. Original algorithm preserved.

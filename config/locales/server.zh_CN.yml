@@ -1,0 +1,16 @@
+zh_CN:
+  site_settings:
+    rsdate_read_only: "只读模式：停止修改、匹配任务、外部向量请求和通知投递"
+    rsdate_admin_only: "仅管理员可访问 RSDate，适合隔离数据核对"
+    rsdate_enabled: "启用RSDate"
+    rsdate_allowed_groups: "允许使用RSDate的用户组（管理员始终可用）"
+    rsdate_admin_groups: "允许管理RSDate的用户组"
+    rsdate_max_pool: "单次匹配人数上限，调高前请进行负载验收"
+    rsdate_scheduled_enabled: "启用周期自动发布（迁移时请先停旧 cron）"
+    rsdate_publish_weekday: "每周发布日，0 为周日，6 为周六"
+    rsdate_publish_hour: "发布小时，使用配置的发布时间区"
+    rsdate_publish_minute: "发布分钟"
+    rsdate_publish_timezone: "发布时间区，迁移时应与旧系统一致"
+    rsdate_school_groups: "学校:论坛组名:校区1|校区2，学校之间以分号分隔"
+    rsdate_embedding_key: "可选 OpenAI 向量 API Key，填写后后台会发送资料文本并产生 API 用量"
+    rsdate_embedding_model: "向量模型；只有相同模型的向量参与比较"
