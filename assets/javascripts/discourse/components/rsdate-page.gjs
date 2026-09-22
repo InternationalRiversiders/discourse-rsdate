@@ -1,3 +1,4 @@
+import { formatDateTime } from "../lib/campus-time";
 import Component from "@glimmer/component";
 import { tracked } from "@glimmer/tracking";
 import { action } from "@ember/object";
@@ -189,7 +190,7 @@ export default class extends Component {
             this.data.stats
             as |stat|
           }}<div><span>{{stat.label}}</span><strong
-              >{{stat.value}}</strong></div>{{/each}}</div>{{/if}}
+              >{{#if stat.at}}<time datetime={{stat.at}}>{{formatDateTime stat.at}}</time>{{else}}{{stat.value}}{{/if}}</strong></div>{{/each}}</div>{{/if}}
       {{#if this.data.filters.length}}<form
           class="river-search"
           role="search"
@@ -223,7 +224,7 @@ export default class extends Component {
         </form>{{/if}}
 
       {{#if this.data.note}}<p class="river-note"><AppIcon @kind="lock" /><span
-          >{{this.data.note}}</span></p>{{/if}}
+          >{{this.data.note}}{{#if this.data.note_at}}<time datetime={{this.data.note_at}}>{{formatDateTime this.data.note_at}}</time>{{/if}}</span></p>{{/if}}
 
       <div class={{this.workspaceClass}}>
         {{#if this.hasCards}}<section

@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 module DiscourseRsdate
   module Service
-    def self.time_label(time) = time ? time.in_time_zone(SiteSetting.rsdate_publish_timezone).strftime('%Y-%m-%d %H:%M') : '尚未参与'
     def self.profile_form(user)
       p = Profile.find_by(user_id: user.id); rule = school_rule(user)
       fields = [Ui.field('nickname', '昵称', p&.nickname, required: true, minlength: 2, maxlength: 24),
@@ -70,7 +69,7 @@ module DiscourseRsdate
         out[:cards] = page_scope(scope, out, query).map do |match|
           partner = Profile.find_by(user_id: match.partner_id); account = User.find_by(id: match.partner_id)
           metrics = Array(match.details['modules']).map { |m| {label: m['title'], value: m['summary'].presence || "#{m['same']} 题一致 / #{m['near']} 题相近"} }
-          Ui.card("match-#{match.id}", partner&.nickname || '历史匹配', partner ? profile_body(partner) : '对方资料已不可用，匹配记录仍保留。', type: 'match', tag: match.current ? '当前结果' : '历史记录', subtitle: time_label(match.published_at), metrics: metrics,
+          Ui.card("match-#{match.id}", partner&.nickname || '历史匹配', partner ? profile_body(partner) : '对方资料已不可用，匹配记录仍保留。', type: 'match', tag: match.current ? '当前结果' : '历史记录', created_at: match.published_at.iso8601, metrics: metrics,
             account: partner && account ? {name: account.username, href: "/u/#{UrlHelper.encode_component(account.username)}"} : nil,
             empty_detail: metrics.empty? ? '这条历史结果没有模块接近度明细。' : nil)
         end
@@ -102,11 +101,11 @@ module DiscourseRsdate
         actions << Ui.action('暂停匹配', 'pause') if p&.active
         out[:cards] = [Ui.card('status', title, description, tag: active ? '等待相遇' : '我的进度', actions: actions,
           links: [Ui.link('编辑资料', {view: 'me'}), Ui.link('填写问卷', {view: 'questions'}), Ui.link('查看结果', {view: 'results'})])]
-        out[:cards] << Ui.card('my-profile', p.nickname, profile_body(p), subtitle: "最近参与发布：#{time_label(p.last_published_at)}") if p
+        out[:cards] << Ui.card('my-profile', p.nickname, profile_body(p), subtitle: p.last_published_at ? nil : "尚未参与", created_at: p.last_published_at&.iso8601, time_label: "最近参与发布：") if p
         out[:stats] = [{label: '参与状态', value: active ? '匹配池中' : (p&.active ? '需补填问卷' : '未参与')},
           {label: '必填模块', value: "#{progress[:completed_required]} / #{progress[:required]}"},
           {label: '当前池内人数', value: Matching.eligible_pool.first.size},
-          {label: '下次发布时间', value: SiteSetting.rsdate_scheduled_enabled ? time_label(next_publish_at) : '由管理员发布'}]
+          {label: '下次发布时间', at: SiteSetting.rsdate_scheduled_enabled ? next_publish_at&.iso8601 : nil, value: '由管理员发布'}]
         out[:note] = '成功配对后自动退出匹配池；再次参加需要主动报名。未配对成功则继续保留在池中。'
       end
       if out[:readonly]
@@ -152,9 +151,9 @@ module DiscourseRsdate
           Ui.card("profile-#{p.id}", p.nickname, profile_body(p), subtitle: "#{Shared.user_name(p.user_id)} · 必填 #{status[:completed_required]}/#{status[:required]}#{current ? " · 当前对象：#{Shared.user_name(current.partner_id)}" : ''}", tag: p.active ? '已选择参加' : '未参加', forms: forms)
         end
       when 'publications'
-        out[:cards] = page_scope(Publication.order(created_at: :desc, id: :desc), out, query).map { |pub| Ui.card("pub-#{pub.id}", pub.cycle_key, "参与 #{pub.pool_size} 人 / 成功 #{pub.pair_count} 对 / 未配对 #{pub.unmatched_count} 人", subtitle: time_label(pub.created_at), tag: {'scheduled_auto' => '定时发布', 'admin_manual_pool' => '整池发布', 'admin_manual_pair' => '指定配对'}[pub.mode] || '历史发布') }
+        out[:cards] = page_scope(Publication.order(created_at: :desc, id: :desc), out, query).map { |pub| Ui.card("pub-#{pub.id}", pub.cycle_key, "参与 #{pub.pool_size} 人 / 成功 #{pub.pair_count} 对 / 未配对 #{pub.unmatched_count} 人", created_at: pub.created_at.iso8601, tag: {'scheduled_auto' => '定时发布', 'admin_manual_pool' => '整池发布', 'admin_manual_pair' => '指定配对'}[pub.mode] || '历史发布') }
       when 'audits'
-        out[:cards] = page_scope(Audit.order(id: :desc), out, query).map { |a| Ui.card("audit-#{a.id}", a.action, a.reason, subtitle: "#{Shared.user_name(a.user_id)} · #{time_label(a.created_at)}") }
+        out[:cards] = page_scope(Audit.order(id: :desc), out, query).map { |a| Ui.card("audit-#{a.id}", a.action, a.reason, subtitle: Shared.user_name(a.user_id), created_at: a.created_at.iso8601) }
       else
         pool, = Matching.eligible_pool
         out[:stats] = [{label: '已填写资料', value: Profile.count}, {label: '已选择参加', value: Profile.where(active: true).count}, {label: '当前有效入池', value: pool.size}]
@@ -169,9 +168,10 @@ module DiscourseRsdate
           else
             '后台处理中，稍后刷新查看。'
           end
-          Ui.card("run-#{r.id}", {'preview' => '匹配预览', 'publish' => '整池发布', 'manual_pair' => '手动配对'}[r.mode], body, tag: {'pending' => '排队中', 'complete' => '已完成', 'failed' => '失败'}[r.status], subtitle: time_label(r.created_at))
+          Ui.card("run-#{r.id}", {'preview' => '匹配预览', 'publish' => '整池发布', 'manual_pair' => '手动配对'}[r.mode], body, tag: {'pending' => '排队中', 'complete' => '已完成', 'failed' => '失败'}[r.status], created_at: r.created_at.iso8601)
         end
-        out[:note] = SiteSetting.rsdate_scheduled_enabled ? "自动发布：#{time_label(next_publish_at)}（#{SiteSetting.rsdate_publish_timezone}）。" : '自动定时发布已关闭。预览不会修改报名状态，也不会发送通知。'
+        out[:note_at] = next_publish_at&.iso8601 if SiteSetting.rsdate_scheduled_enabled
+        out[:note] = SiteSetting.rsdate_scheduled_enabled ? "自动发布时间：" : '自动定时发布已关闭。预览不会修改报名状态，也不会发送通知。'
         out[:refresh] = {view: 'admin', page: query['page']}
       end
     end

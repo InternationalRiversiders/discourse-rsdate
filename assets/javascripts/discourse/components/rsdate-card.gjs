@@ -1,3 +1,4 @@
+import { formatDateTime } from "../lib/campus-time";
 import Component from "@glimmer/component";
 import { on } from "@ember/modifier";
 import { fn } from "@ember/helper";
@@ -25,6 +26,7 @@ export default class extends Component {
             >{{@card.subtitle}}</p>{{/if}}
         </div>
       </div>
+      {{#if @card.created_at}}<p class="river-meta">{{@card.time_label}} <time datetime={{@card.created_at}}>{{formatDateTime @card.created_at}}</time></p>{{/if}}
       {{#if @card.images}}<div class="river-images">{{#each
             @card.images
             as |url|
