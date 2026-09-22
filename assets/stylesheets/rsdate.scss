@@ -891,3 +891,8 @@
   .avatar { width: 24px; height: 24px; flex: 0 0 24px; border-radius: 50%; }
   > span { min-width: 0; overflow-wrap: anywhere; }
 }
+
+.river-rsdate .river-card-symbol {
+  > a[data-user-card] { display: block; width: 100%; height: 100%; }
+  .avatar { display: block; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+}
