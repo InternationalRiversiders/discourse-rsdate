@@ -116,16 +116,6 @@ export default class extends Component {
   get activeFilters() {
     return this.extraFilters.some((field) => Boolean(field.value));
   }
-  get showAction() {
-    return (
-      this.data.member && !this.data.readonly &&
-      this.data.view !== "questions" &&
-      this.data.view !== "admin"
-    );
-  }
-  @action primaryAction(event) {
-    return this.navigate({ view: "questions" }, event);
-  }
   <template>
     <main
       class="river-app river-rsdate"
@@ -133,24 +123,7 @@ export default class extends Component {
       aria-busy={{this.busy}}
       {{this.mount}}
     >
-      <header class="river-hero">
-        <div class="river-hero-copy"><span class="river-eyebrow"><span
-              class="river-brand-dot"
-            ></span>RIVERSIDE / CONNECTIONS</span><h1>{{this.data.title}}</h1><p
-          >{{this.data.intro}}</p>
-          {{#if this.showAction}}<button
-              class="river-hero-action"
-              type="button"
-              disabled={{this.busy}}
-              {{on "click" this.primaryAction}}
-            >填写问卷<AppIcon @kind="arrow" /></button>{{/if}}
-        </div>
-        <div class="river-hero-art" aria-hidden="true"><span
-            class="river-orbit"
-          ></span><span class="river-art-tile"><AppIcon
-              @kind="heart"
-            /></span><span class="river-art-dot"></span></div>
-      </header>
+      <h1 class="sr-only">{{this.data.title}}</h1>
       <nav class="river-tabs" aria-label="功能导航">{{#each
           this.data.tabs key="id"
           as |tab|
