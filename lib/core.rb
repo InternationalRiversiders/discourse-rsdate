@@ -85,6 +85,11 @@ module DiscourseRsdate
         end
       end
     end
+    # Public forum fields only; callers enforce each feature's anonymity rules.
+    def self.forum_user(id)
+      user = id.is_a?(User) ? id : User.find_by(id: id)
+      user && { id: user.id, username: user.username, avatar_template: user.avatar_template }
+    end
     def self.user_name(id) = User.find_by(id: id)&.username || '已注销用户'
   end
   class MainController < ::ApplicationController

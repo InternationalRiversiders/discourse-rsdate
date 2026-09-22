@@ -1,4 +1,6 @@
 import { formatDateTime } from "../lib/campus-time";
+import ForumUser from "./rsdate-user";
+import DUserAvatar from "discourse/ui-kit/d-user-avatar";
 import Component from "@glimmer/component";
 import { on } from "@ember/modifier";
 import { fn } from "@ember/helper";
@@ -14,10 +16,7 @@ export default class extends Component {
   <template>
     <article class="river-card" data-card-id={{@card.id}}>
       <div class="river-card-heading">
-        <span
-          class="river-card-symbol"
-          aria-hidden="true"
-        >{{this.initial}}</span>
+        <div class="river-card-symbol">{{#if @card.account}}<DUserAvatar @user={{@card.account}} @size="medium" />{{else}}<span aria-hidden="true">{{this.initial}}</span>{{/if}}</div>
         <div class="river-card-heading-text">{{#if @card.tag}}<span
               class="river-tag"
             >{{@card.tag}}</span>{{/if}}
@@ -41,7 +40,7 @@ export default class extends Component {
             as |metric|
           }}<div><dt>{{metric.label}}</dt><dd
               >{{metric.value}}</dd></div>{{/each}}</dl>{{/if}}
-      {{#if @card.account}}<a class="river-account" href={{@card.account.href}}>@{{@card.account.name}} · 查看论坛主页<AppIcon @kind="arrow" /></a>{{/if}}
+      {{#if @card.account}}<ForumUser @user={{@card.account}} @hideAvatar={{true}} />{{/if}}
       {{#if @card.detail_note}}<p class="river-match-note">{{@card.detail_note}}</p>{{/if}}
       {{#if @card.empty_detail}}<p class="river-meta">{{@card.empty_detail}}</p>{{/if}}
       {{#if @card.links.length}}<div class="river-card-links">{{#each
