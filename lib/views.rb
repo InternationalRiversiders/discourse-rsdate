@@ -69,7 +69,7 @@ module DiscourseRsdate
         out[:cards] = page_scope(scope, out, query).map do |match|
           partner = Profile.find_by(user_id: match.partner_id); account = User.find_by(id: match.partner_id)
           metrics = Array(match.details['modules']).map { |m| {label: m['title'], value: m['summary'].presence || "#{m['same']} 题一致 / #{m['near']} 题相近"} }
-          Ui.card("match-#{match.id}", partner&.nickname || '历史匹配', partner ? profile_body(partner) : '对方资料已不可用，匹配记录仍保留。', type: 'match', tag: match.current ? '当前结果' : '历史记录', created_at: match.published_at.iso8601, metrics: metrics,
+          Ui.card("match-#{match.id}", partner ? (account&.username || '已注销用户') : '历史匹配', partner ? profile_body(partner) : '对方资料已不可用，匹配记录仍保留。', type: 'match', author_title: true, tag: match.current ? '当前结果' : '历史记录', created_at: match.published_at.iso8601, metrics: metrics,
             account: partner && account ? Shared.forum_user(account).merge(name: account.username, href: "/u/#{UrlHelper.encode_component(account.username)}") : nil,
             empty_detail: metrics.empty? ? '这条历史结果没有模块接近度明细。' : nil)
         end
@@ -101,7 +101,7 @@ module DiscourseRsdate
         actions << Ui.action('暂停匹配', 'pause') if p&.active
         out[:cards] = [Ui.card('status', title, description, tag: active ? '等待相遇' : '我的进度', actions: actions,
           links: [Ui.link('编辑资料', {view: 'me'}), Ui.link('填写问卷', {view: 'questions'}), Ui.link('查看结果', {view: 'results'})])]
-        out[:cards] << Ui.card('my-profile', p.nickname, profile_body(p), subtitle: p.last_published_at ? nil : "尚未参与", created_at: p.last_published_at&.iso8601, time_label: "最近参与发布：") if p
+        out[:cards] << Ui.card('my-profile', user.username, profile_body(p), author_title: true, account: Shared.forum_user(user), subtitle: p.last_published_at ? nil : "尚未参与", created_at: p.last_published_at&.iso8601, time_label: "最近参与发布：") if p
         out[:stats] = [{label: '参与状态', value: active ? '匹配池中' : (p&.active ? '需补填问卷' : '未参与')},
           {label: '必填模块', value: "#{progress[:completed_required]} / #{progress[:required]}"},
           {label: '当前池内人数', value: Matching.eligible_pool.first.size},
@@ -148,7 +148,7 @@ module DiscourseRsdate
           status = progress(p.user_id); current = Match.find_by(user_id: p.user_id, current: true)
           forms = [Ui.form(p.active ? '暂停参与' : '恢复参与', 'set_active', [Ui.field('reason', '处理理由', nil, required: true)], {'user_id' => p.user_id, 'active' => !p.active}, button: p.active ? '暂停' : '恢复', confirm: p.active ? nil : '请确认该用户愿意重新参加匹配。')]
           forms << Ui.form('撤回当前结果', 'clear_match', [Ui.field('reason', '处理理由', nil, required: true)], {'user_id' => p.user_id}, button: '撤回配对', confirm: '双方本次结果及对应历史将撤回，双方重新入池。确定继续？') if current
-          Ui.card("profile-#{p.id}", p.nickname, profile_body(p), subtitle: "#{Shared.user_name(p.user_id)} · 必填 #{status[:completed_required]}/#{status[:required]}#{current ? " · 当前对象：#{Shared.user_name(current.partner_id)}" : ''}", account: Shared.forum_user(p.user_id), tag: p.active ? '已选择参加' : '未参加', forms: forms)
+          Ui.card("profile-#{p.id}", Shared.user_name(p.user_id), profile_body(p), author_title: true, subtitle: "必填 #{status[:completed_required]}/#{status[:required]}#{current ? " · 当前对象：#{Shared.user_name(current.partner_id)}" : ''}", account: Shared.forum_user(p.user_id), tag: p.active ? '已选择参加' : '未参加', forms: forms)
         end
       when 'publications'
         out[:cards] = page_scope(Publication.order(created_at: :desc, id: :desc), out, query).map { |pub| Ui.card("pub-#{pub.id}", pub.cycle_key, "参与 #{pub.pool_size} 人 / 成功 #{pub.pair_count} 对 / 未配对 #{pub.unmatched_count} 人", created_at: pub.created_at.iso8601, tag: {'scheduled_auto' => '定时发布', 'admin_manual_pool' => '整池发布', 'admin_manual_pair' => '指定配对'}[pub.mode] || '历史发布') }

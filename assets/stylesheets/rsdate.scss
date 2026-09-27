@@ -896,3 +896,9 @@
   > a[data-user-card] { display: block; width: 100%; height: 100%; }
   .avatar { display: block; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
 }
+
+// Keep long forum IDs on one line in profile headings.
+.river-rsdate .river-card-heading h2 .rsdate-forum-user {
+  display: flex;
+  > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}

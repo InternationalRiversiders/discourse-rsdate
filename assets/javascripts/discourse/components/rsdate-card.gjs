@@ -20,7 +20,7 @@ export default class extends Component {
         <div class="river-card-heading-text">{{#if @card.tag}}<span
               class="river-tag"
             >{{@card.tag}}</span>{{/if}}
-          <h2>{{@card.title}}</h2>{{#if @card.subtitle}}<p
+          <h2>{{#if @card.author_title}}<ForumUser @user={{@card.account}} @name={{@card.title}} @hideAvatar={{true}} />{{else}}{{@card.title}}{{/if}}</h2>{{#if @card.subtitle}}<p
               class="river-meta"
             >{{@card.subtitle}}</p>{{/if}}
         </div>
@@ -40,7 +40,7 @@ export default class extends Component {
             as |metric|
           }}<div><dt>{{metric.label}}</dt><dd
               >{{metric.value}}</dd></div>{{/each}}</dl>{{/if}}
-      {{#if @card.account}}<ForumUser @user={{@card.account}} @hideAvatar={{true}} />{{/if}}
+      {{#unless @card.author_title}}{{#if @card.account}}<ForumUser @user={{@card.account}} @hideAvatar={{true}} />{{/if}}{{/unless}}
       {{#if @card.detail_note}}<p class="river-match-note">{{@card.detail_note}}</p>{{/if}}
       {{#if @card.empty_detail}}<p class="river-meta">{{@card.empty_detail}}</p>{{/if}}
       {{#if @card.links.length}}<div class="river-card-links">{{#each
